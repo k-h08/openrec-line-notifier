@@ -26,6 +26,14 @@ let isLiveNotified = false; // 既に通知済みかどうかのフラグ
 let lastLiveTitle = ''; // 最後に通知した配信タイトル
 
 /**
+ * 現在の日時をフォーマットして返す関数
+ */
+function getCurrentFormattedDate() {
+  const now = new Date();
+  return now.toISOString();
+}
+
+/**
  * 配信情報をチェックし、必要に応じてLINEへ通知する関数
  */
 async function checkOpenrecLiveStatus() {
@@ -33,9 +41,9 @@ async function checkOpenrecLiveStatus() {
     const liveStream = await fetchOpenrecLiveStatus();
 
     if (liveStream) {
-      console.log('📹 配信中:', liveStream.title);
+      console.log(`[${getCurrentFormattedDate()}] 📹 配信中:`, liveStream.title);
     } else {
-      console.log('📹 配信なし');
+      console.log(`[${getCurrentFormattedDate()}] 📹 配信なし`);
     }
 
     if (liveStream && (!isLiveNotified || liveStream.title !== lastLiveTitle)) {
@@ -56,19 +64,19 @@ async function checkOpenrecLiveStatus() {
       lastLiveTitle = ''; // 配信終了時にタイトルをリセット
     }
   } catch (error) {
-    console.error('❌ OpenREC APIエラー:', error.response?.data || error.message);
+    console.error(`[${getCurrentFormattedDate()}] ❌ OpenREC APIエラー:`, error.response?.data || error.message);
   }
 }
 
 // 1分ごとに配信状況をチェック
 cron.schedule('*/1 * * * *', async () => {
-  console.log('🕒 OpenRECの配信状況をチェック中...');
+  console.log(`[${getCurrentFormattedDate()}] 🕒 OpenRECの配信状況をチェック中...`);
   await checkOpenrecLiveStatus();
 });
 
 // 必要に応じてLINE Webhookエンドポイントを用意（今回はデバッグ用）
 app.post('/webhook', (req, res) => {
-  console.log('📩 LINE Webhook受信:', req.body);
+  console.log(`[${getCurrentFormattedDate()}] 📩 LINE Webhook受信:`, req.body);
   console.log(JSON.stringify(req.body, null, 2)); // req.body を直接ログに出力
   res.sendStatus(200);
 });
@@ -76,5 +84,5 @@ app.post('/webhook', (req, res) => {
 // サーバー起動
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 サーバーがポート ${PORT} で起動しました`);
+  console.log(`[${getCurrentFormattedDate()}] 🚀 サーバーがポート ${PORT} で起動しました`);
 });
