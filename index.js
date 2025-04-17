@@ -97,6 +97,10 @@ app.post("/webhook", (req, res) => {
 	res.sendStatus(200);
 });
 
+app.get("/", (req, res) => {
+	res.send("App is alive!");
+});
+
 // サーバー起動
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
