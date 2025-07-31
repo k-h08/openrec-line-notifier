@@ -1,70 +1,104 @@
-# OpenREC LINE Notifier
+# OpenREC Line Notifier
 
-特定のOpenRECチャンネルの配信開始および終了を検知し、LINE Botを通じてプッシュ通知を送信するNode.js/Expressアプリケーションです。
+特定のOpenRECチャンネルの配信開始を検知し、LINE Botを通じてプッシュ通知を送信するNode.js/Expressアプリケーションです。
 
-## 機能概要
+## 🏗️ アーキテクチャ
 
-- OpenREC APIを定期的にポーリングして、対象チャンネルの配信状況をチェック
-- 配信が開始されたタイミングおよび終了したタイミングで、LINE Messaging APIを使って指定ユーザーに通知を送信
-- 環境変数により設定を簡単に変更可能
+このプロジェクトは**クリーンアーキテクチャ**の原則に従って設計されています：
 
-## 動作環境
+```
+src/
+├── entities/           # ビジネスエンティティ
+│   ├── LiveStream.js
+│   └── NotificationMessage.js
+├── usecases/          # ビジネスユースケース
+│   └── CheckLiveStreamUseCase.js
+├── interfaces/         # インターフェース
+│   ├── ILiveStreamRepository.js
+│   └── INotificationService.js
+├── infrastructure/     # 外部システムとの接続
+│   ├── OpenRecApiRepository.js
+│   └── LineNotificationService.js
+├── application/        # アプリケーション層
+│   ├── Configuration.js
+│   └── LiveStreamMonitor.js
+└── index.js           # エントリーポイント
+```
 
-- Node.js (推奨バージョン 14.x 以上)
-- npm
+### レイヤー構成
 
-## インストール
+1. **Entities（エンティティ）**: ビジネスロジックの中心
+   - `LiveStream`: 配信情報を表すエンティティ
+   - `NotificationMessage`: 通知メッセージを表すエンティティ
 
-1. リポジトリをクローン
+2. **Use Cases（ユースケース）**: アプリケーションのビジネスルール
+   - `CheckLiveStreamUseCase`: 配信状況をチェックするユースケース
 
-   ```bash
-   git clone https://github.com/k-h08/openrec-line-notifier.git
-   cd openrec-line-notifier
-   ```
+3. **Interfaces（インターフェース）**: 外部システムとの抽象化
+   - `ILiveStreamRepository`: 配信情報取得のインターフェース
+   - `INotificationService`: 通知サービスのインターフェース
 
-2. 依存パッケージのインストール
+4. **Infrastructure（インフラストラクチャ）**: 外部システムとの実装
+   - `OpenRecApiRepository`: OpenREC APIとの接続
+   - `LineNotificationService`: LINE通知サービスの実装
 
-   ```bash
-   npm install
-   ```
+5. **Application（アプリケーション）**: アプリケーション層
+   - `Configuration`: 設定管理
+   - `LiveStreamMonitor`: 配信監視アプリケーション
 
-3. `.env` ファイルをプロジェクトルートに作成し、以下の内容を記載
+## 🚀 セットアップ
 
-   ```env
-   # LINE設定
-   LINE_CHANNEL_ACCESS_TOKEN=your_line_channel_access_token
-   LINE_USER_ID=your_line_user_id
+### 1. 依存関係のインストール
 
-   # OpenREC設定
-   OPENREC_CHANNEL_ID=target_user_id
-   OPENREC_API_URL=https://public.openrec.tv/external/api/v5/movies
-   ```
+```bash
+npm install
+```
 
-## 使い方
+### 2. 環境変数の設定
 
-1. サーバーを起動
+`.env`ファイルを作成し、以下の環境変数を設定してください：
 
-   ```bash
-   node index.js
-   ```
+```env
+LINE_CHANNEL_ACCESS_TOKEN=your_line_channel_access_token
+LINE_USER_ID=your_line_user_id
+OPENREC_CHANNEL_ID=your_openrec_channel_id
+OPENREC_API_URL=https://public.openrec.tv/external/api/v5/movie/search
+PORT=3000
+```
 
-2. サーバー起動後、1分ごとにOpenREC APIをチェックし、指定したチャンネルが配信中になった場合、LINEにプッシュ通知が送信されます。配信が終了した場合も通知が送信されます。
+### 3. アプリケーションの起動
 
-## コード構成
+```bash
+# 本番環境
+npm start
 
-- `index.js`  
-  メインのサーバーファイル。Expressサーバーの起動、OpenREC APIのポーリング、LINE通知の送信処理を実装しています。
+# 開発環境（nodemon使用）
+npm run dev
+```
 
-## カスタマイズ
+## 📋 機能
 
-- **ポーリング間隔の変更:**  
-  `node-cron` の設定を変更することでチェック間隔を調整可能です。
+- **自動配信監視**: 1分ごとにOpenRECの配信状況をチェック
+- **LINE通知**: 配信開始/終了時にLINE Botでプッシュ通知
+- **タイトル変更検知**: 配信タイトルが変更された場合も通知
+- **REST API**: 配信状況確認用のエンドポイント
 
-- **通知内容の変更:**  
-  `sendLinePushMessage` 関数内のメッセージフォーマットを変更することで、通知メッセージをカスタマイズできます。
+## 🔧 API エンドポイント
 
-## デプロイ
+- `GET /`: ヘルスチェック
+- `GET /status`: 現在の配信状況を取得
+- `POST /webhook`: LINE Webhook（デバッグ用）
 
-HerokuやRender、Vercelなどのクラウドサービスにデプロイして利用できます。公開する場合は、LINE DevelopersコンソールにWebhook URLを登録してください。
+## 🧪 テスト
 
-このプロジェクトを気に入っていただけたら、スターやフォークも大歓迎です！
+```bash
+npm test
+```
+
+## 📝 ライセンス
+
+ISC
+
+## 🤝 貢献
+
+プルリクエストやイシューの報告を歓迎します。

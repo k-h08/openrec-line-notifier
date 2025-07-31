@@ -2,8 +2,10 @@
   "name": "openrec-line-notifier",
   "version": "1.0.0",
   "description": "特定のOpenRECチャンネルの配信開始を検知し、LINE Botを通じてプッシュ通知を送信するNode.js/Expressアプリケーションです。",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +17,10 @@
     "express": "^4.21.2",
     "iconv-lite": "^0.6.3",
     "linebot": "^1.6.1",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
